@@ -17,7 +17,7 @@ The following data are first collected in database
 - HTML, CSS, Javascript, D3JS
 
 ### 4. Strategy:
-The dataset contains about 30 features about a flight and the airports. However, at the time of booking, the only information available to a user (passenger) are date, origin, destination and airline. In order to take advantage all of the information provided by our data sources, I first analyze all features about airports separately from features about a flights and then generate clusters of similar airports or flights.
+The dataset contains about 30 features about a flight and the airports. However, at the time of booking, the only information available to a user (passenger) are date, origin, destination and airline. In order to take advantage all of the information provided by our data sources, I first analyze all features about airports separately from features about  flights and then generate clusters of similar airports snd flights.
 
 1. [Airports analysis] (https://github.com/kthouz/Flights_Delays/blob/master/01_1_Airports_Analysis.ipynb): run statistical analysis and cluster similar aiports together
 
