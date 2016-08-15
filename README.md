@@ -7,9 +7,9 @@
 ### 2. Data: 
 The following data are first collected in database
 
-**- Flight delays data:** http://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236&DB_Short_Name=On-Time
+**- [Flight delays data] (http://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236&DB_Short_Name=On-Time):** 
 
-**- Airports statistics:** http://www.faa.gov/airports/planning_capacity/passenger_allcargo_stats/passenger/previous_years/
+**- [Airports statistics] (http://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236&DB_Short_Name=On-Time):**
 
 ### 3. Tools:
 - Python
@@ -21,7 +21,7 @@ The dataset contains about 30 features about a flight and the airports. However,
 
 1. [Airports analysis] (https://github.com/kthouz/Flights_Delays/blob/master/01_1_Airports_Analysis.ipynb): run statistical analysis and cluster similar aiports together
 
-2. Flights analysis: run statistics and cluster similar flights together
+2. [Flights analysis] (https://github.com/kthouz/Flights_Delays/blob/master/01_2_Flights_Analysis.ipynb): run statistics and cluster similar flights together
 
 3. Delays analysis: build predictive model
 
