@@ -7,9 +7,9 @@
 ### 2. Data: 
 The following data are first collected in database
 
-**- [Flight delays data] (http://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236&DB_Short_Name=On-Time):** 
+**- [Flight delays data from transtats.bts.gov] (http://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236&DB_Short_Name=On-Time):** 
 
-**- [Airports statistics] (http://www.transtats.bts.gov/DL_SelectFields.asp?Table_ID=236&DB_Short_Name=On-Time):**
+**- [Airports statistics from faa.gov] (http://www.faa.gov/airports/planning_capacity/passenger_allcargo_stats/passenger/previous_years/):**
 
 ### 3. Tools:
 - Python
