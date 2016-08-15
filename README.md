@@ -15,7 +15,6 @@ The following data are first collected in database
 - Python
 - SQL
 - HTML, CSS, Javascript, D3JS
-- 
 ### 4. Strategy:
 The dataset contains about 30 features about a flight and the airports. However, at the time of booking, the only information available to a user (passenger) are date, origin, destination and airline. In order to take advantage all of the information provided by our data sources, I first analyze all features about airports separately from features about a flights and then generate clusters of similar airports or flights.
 
