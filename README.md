@@ -1,5 +1,5 @@
 ## Flights Delays
-[click for a demo video](https://www.youtube.com/watch?v=qPweMCNV_oA)
+[click here for a demo video](https://www.youtube.com/watch?v=qPweMCNV_oA)
 ### 1. Objectives: 
 1. Build a model to predict how long a flight is to be delayed given flight date, origin and destionation airports as well as the airline
 2. Build a user friendly web application
