@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<!-- Tell the browser to read the file -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<!--Tell the page to use bootstrap css style -->
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/css/bootstrap.min.css" integrity="sha384-y3tfxAZXuh4HwSYylfB+J125MxIs6mR5FOHamPBG064zB+AFeWH94NdvaCBm8qnd" crossorigin="anonymous">
+	<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker.min.css" />
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/css/datepicker3.min.css" />
+	
+	<title>Flights Delay Prediction</title>
+	<script src="http://d3js.org/d3.v3.min.js"></script>
+	<script src="http://d3js.org/topojson.v0.min.js"></script>
+</head>
+<body style="background-image:url('http://www.rd.com/wp-content/uploads/sites/2/2016/01/03-13-things-your-pilot-wont-tell-you-morning-flight.jpg')">
+	<div class="container-fluid" style="background-color:rgba(220,220,245,0.0)">
+		<div class="container text-center" id="upper-banner" style="background-color:rgba(245, 245, 245, 0.5)">
+			<h3><p class="text-center">Flight Delays Predictions</p></h3>
+			<p>This app calculates the probability for a flight to be delayed by 15 minutes and plus. It uses historical data of the last six years of US domestic flights operated by US airlines, operational over the six years on top twenty airports. Airports are ranked based on number of flights hosted per year</p>
+		</div>
+	</div>
+	<div class="container" style="background-color:rgba(245, 245, 245, 0.2)">
+		
+		<div class="col-md-6" id="left-container">
+			<div class="container-fluid bg-primary" style="opacity:0.8">
+				<div class="form-group col-md-6 origin">
+					<label for="origin">Flying from</label>
+					<select class="form-control" id="origin">
+						<option value="Select airport">Select airport</option>
+					</select>
+				</div>
+				<div class="form-group col-md-6">
+					<label for="destination">Flying to</label>
+					<select class="form-control" id="destination">
+						<option value="Select airport">Select airport</option>
+					</select>
+				</div>
+			</div>
+			<div class="container-fluid bg-primary" style="opacity:0.8">
+				<div class="form-group col-md-5">
+					<label for="airline">Airline</label>
+					<select class="form-control" id="airline">
+						<option value="Select airline">Select airline</option>
+					</select>
+				</div>
+				<div class="col-md-5">
+					<label for"fligh-date">Flight date</label>
+					<div class="input-group date" data-provide="datepicker">
+					    <input type="text" class="form-control" value="Select date" id=flight-date style="height:24px">
+					    <div class="input-group-addon">
+					        <span class="glyphicon glyphicon-th"></span>
+					    </div>
+					</div>
+				</div>
+				<div class="form-group col-md-2">
+					<a id="submit-variables"><button class="btn" type="submit" style="height:53px">Go</button></a>
+				</div>
+			</div>
+			<div class="container" style="background-color:rgba(245, 245, 245, 0.3)">
+				<div class="container-fluid" id="summary" style="background-color:rgba(245, 245, 245, 0)">
+				</div>
+			</div>
+		</div>
+		<div class="col-md-6" id="right-container">
+			<div class="container-fluid" id="map" style="fill:#036; stroke:#6cb0e0;"></div>
+		</div>
+	</div>
+	
+	<!--Tell the page to use bootstrap javascript. Make sure jQuery link coes before bootstrap-->
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+	<script type="text/javascript">
+		var airlines={{ airlines|tojson }}
+		var airports={{ airports|tojson }}
+	</script>
+	<script type="text/javascript">
+		$(document).ready(function(){
+			for(i in airlines){
+				$('#airline ul').append('<li><a href="">'+airlines[i]+'</a></li>')
+			}
+		})
+	</script>
+	<script>
+		//populate dropdown lists
+		$(document).ready(function(){
+			airline_opt = document.getElementById('airline');
+			origin_opt = document.getElementById('origin');
+			destination_opt = document.getElementById('destination')
+
+			airline_len = airline_opt.options.length;
+			for(item in airlines){
+				airline_opt.options[airline_len] = new Option(airlines[item],airlines[item]);
+				airline_len = airline_len+1;
+			}
+			
+			origin_len = origin_opt.options.length;
+			destination_len = destination_opt.options.length;
+			for(item in airports){
+				origin_opt.options[origin_len] = new Option(airports[item],airports[item]);
+				destination_opt.options[destination_len] = new Option(airports[item],airports[item]);
+
+				origin_len = origin_len+1;
+				destination_len = destination_len+1;
+			}
+		})
+		// ----- adapted from http://www.tnoda.com/blog/2014-04-02 ------
+		//create map
+		create_map()
+		function create_map(){
+			// define size of the map
+			var width = 700;
+			var height = 450;
+			
+			// define the projection
+			//var projection = d3.geo.albersUsa().scale(800).translate([width/2, height/2]);
+			var projection = d3.geo.albersUsa().scale(600).translate([width/2.5, height/3]);
+
+			// attach svg
+			var svg = d3.select("#map").append("svg").attr("id","a_svg").attr("width",width).attr("height",height);
+
+			// attach projection
+			var path = d3.geo.path().pointRadius(2).projection(projection);
+
+			var g = svg.append("g");
+
+			d3.json("https://raw.githubusercontent.com/tomnoda/interactive_d3_map/master/states_usa.topo.json", function(error,topology){
+				states = topojson.object(topology,topology.objects.states).geometries;
+				g.selectAll("path").data(states).enter().append("path").attr("id","states").style("fill", "steelblue").attr("d",path);
+			});
+			return {"g":g,"projection":projection,"path":path}
+		}
+		// create airports
+		function create_hubs(svg,projection,origin,destination){
+			d3.json("https://raw.githubusercontent.com/tomnoda/interactive_d3_map/master/states_usa.topo.json", function(error,topology){
+					//add points
+					svg.selectAll("circle").data([origin,destination]).enter().append("circle")
+					.attr("id","circ")
+					.attr("cx", function(d){return projection(d)[0];})
+					.attr("cy", function(d){return projection(d)[1];})
+					.attr("r","6px")
+					.attr("fill","red")
+					.popover(
+						function(d,i){
+							var nsvg = d3.select("#a_svg").append("svg").attr("id","nsvg").attr("width",120).attr("height",70);
+							nsvg = nsvg.append("g").append("html").html(d[3])
+										.attr("font-family","sans-serif")
+										.attr("font-size","4px")
+										//.attr("fill","white")
+										//.attr("stroke","white")
+							return {
+								title:d[2],
+								content:nsvg,
+								placement:"fixed",
+								gravity:"right",
+								position:[projection(d)[0],projection(d)[1]],
+								displacement:[0,2],
+								mouseover:false
+							};
+						});
+				});
+		};
+		// create flight path
+		function create_flight_route(path,origin,destination){
+
+			var svg = d3.select("#a_svg").append("g");
+			var route = svg.append("path")
+               .datum({type: "LineString", coordinates: [origin, destination]})
+               //.append("path")
+               .attr("class", "route")
+               .attr("d", path)
+               .attr("fill","none")
+               .attr("stroke-width","2px")
+               .attr("stroke","none")
+              return route
+		};
+		// create plane
+		function create_plane(){
+			var svg = d3.select("#a_svg").append("g");
+			var plane = svg.append("path")
+                   .attr("class", "plane")
+                   .attr("d", "m25.21488,3.93375c-0.44355,0 -0.84275,0.18332 -1.17933,0.51592c-0.33397,0.33267 -0.61055,0.80884 -0.84275,1.40377c-0.45922,1.18911 -0.74362,2.85964 -0.89755,4.86085c-0.15655,1.99729 -0.18263,4.32223 -0.11741,6.81118c-5.51835,2.26427 -16.7116,6.93857 -17.60916,7.98223c-1.19759,1.38937 -0.81143,2.98095 -0.32874,4.03902l18.39971,-3.74549c0.38616,4.88048 0.94192,9.7138 1.42461,13.50099c-1.80032,0.52703 -5.1609,1.56679 -5.85232,2.21255c-0.95496,0.88711 -0.95496,3.75718 -0.95496,3.75718l7.53,-0.61316c0.17743,1.23545 0.28701,1.95767 0.28701,1.95767l0.01304,0.06557l0.06002,0l0.13829,0l0.0574,0l0.01043,-0.06557c0,0 0.11218,-0.72222 0.28961,-1.95767l7.53164,0.61316c0,0 0,-2.87006 -0.95496,-3.75718c-0.69044,-0.64577 -4.05363,-1.68813 -5.85133,-2.21516c0.48009,-3.77545 1.03061,-8.58921 1.42198,-13.45404l18.18207,3.70115c0.48009,-1.05806 0.86881,-2.64965 -0.32617,-4.03902c-0.88969,-1.03062 -11.81147,-5.60054 -17.39409,-7.89352c0.06524,-2.52287 0.04175,-4.88024 -0.1148,-6.89989l0,-0.00476c-0.15655,-1.99844 -0.44094,-3.6683 -0.90277,-4.8561c-0.22699,-0.59493 -0.50356,-1.07111 -0.83754,-1.40377c-0.33658,-0.3326 -0.73578,-0.51592 -1.18194,-0.51592l0,0l-0.00001,0l0,0z")
+                   .attr("fill","blue");
+             return plane
+		}
+
+		// create transition
+		function transition(plane, route) {
+			  var l = route.node().getTotalLength();
+			  plane.transition()
+			       .duration(5000)
+			       .attrTween("transform", delta(route.node()));
+			}
+		function delta(path) {
+			  var l = path.getTotalLength();
+			  return function(i) {
+			    return function(t) {
+			      var p = path.getPointAtLength(t * l);
+			      var t2 = Math.min(t + 0.05, 1);
+			      var p2 = path.getPointAtLength(t2 * l);
+			      var x = p2.x - p.x;
+				  var y = p2.y - p.y;
+				  var r = 90 - Math.atan2(-y, x) * 180 / Math.PI;
+				  var s = Math.min(Math.sin(Math.PI * t) * .8, 0.4);
+
+			      return "translate(" + p.x + "," + p.y + ") scale(" + s + ") rotate(" + r + ")";
+			    }
+			  }
+			}
+		d3.selection.prototype.moveToFront = function() {
+			  return this.each(function(){
+			  this.parentNode.appendChild(this);
+			  });
+			};
+		//bind function to Go button
+		
+		$('a#submit-variables').bind('click',function(){
+			var orig = document.getElementById('origin').value;
+			var dest = document.getElementById('destination').value;
+			var carrier = document.getElementById('airline').value;
+			var fl_date = document.getElementById('flight-date').value;
+			$.getJSON('/make_predictions',
+				{variables:orig+'__'+dest+'__'+carrier+'__'+fl_date},
+				function(data){
+					$('#summary').html('Based on historical data, there is '+data.probability+'% chances that the '+data.flight.airline+' flight from '+data.origin.hub+' to '+data.destination.hub+' on '+data.date+' might be delayed by more than 15 minutes<br/><h5>Flight info same week last year</h5><br/>'+data.flight.stats);
+					pt_a = [data.origin.lon,data.origin.lat,data.origin.hub,data.origin.stats];
+					pt_b = [data.destination.lon,data.destination.lat,data.destination.hub,data.destination.stats];
+					
+					// delete the map if exist
+					if ($("#map").length>=1){
+						d3.selectAll("#a_svg").remove();
+					}
+					// initiate map
+					var cmap = create_map();
+					create_hubs(cmap.g,cmap.projection,pt_a,pt_b);
+					var plane = create_plane();
+					var route = create_flight_route(cmap.path,pt_a,pt_b);
+					transition(plane,route);
+
+					
+				})
+			
+			return false
+		})		
+	</script>
+	<script type="text/javascript">
+	//	d3.select(".route").moveToFront();
+	//	d3.selectAll("#circ").moveToFront();
+	//	d3.selectAll(".plane").moveToFront();
+	</script>
+	<script src="https://www.atlasestateagents.co.uk/javascript/tether.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.2/js/bootstrap.min.js" integrity="sha384-vZ2WRJMwsjRMW/8U7i6PWi6AlO1L79snBrmgiDpgIWJ82z8eA5lenwvxbMV1PAh7" crossorigin="anonymous"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.3.0/js/bootstrap-datepicker.min.js"></script>
+	<script src="https://raw.githubusercontent.com/zmaril/d3-bootstrap-plugins/master/dist/js/d3-bootstrap-plugins.js"></script>
+	
+
+
+</body>
+</html>

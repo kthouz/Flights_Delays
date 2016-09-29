@@ -23,6 +23,7 @@ class Transtats():
         self.__lookup_DelayGroups__()
         self.__lookup_TimeBlocks__()
         self.__lookup_DistanceGroups__()
+        #self.__get_num_passengers__()
     
     def __lookup_Airports__(self):
         tbl = 'lookup_Airport'
@@ -120,6 +121,10 @@ class Transtats():
             print "error and skipped"
             df = pd.DataFrame(columns=columns)
             return df
+    def __get_num_passengers__(self):
+        passengers = pd.read_csv('http://www.rita.dot.gov/bts/acts/custom/export/1/1/RPE/1262322000/1462075200/service/1/2////');
+        self.passengers = passengers
+        #return passengers
 
 class Faa():
     def __init__(self):
