@@ -1,6 +1,6 @@
 ## Flights Delays
 This repo contains notebook and scripts used to build a model to predict wether a flight will be delayed by 15min+ or not given the origin, destination, airline, date and time.
-[click here for a demo video](https://www.youtube.com/watch?v=qPweMCNV_oA)
+[Click here for a demo video](https://www.youtube.com/watch?v=qPweMCNV_oA)
 ### 1. Objectives: 
 1. Build a model to predict how long a flight is to be delayed given flight date, origin and destionation airports as well as the airline
 2. Build a user friendly web application
